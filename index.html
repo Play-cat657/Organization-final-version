@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Estuda+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#4f46e5;
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#1f2937;
+}
+
+body.dark{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --text:#f8fafc;
+}
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+header{
+  background:var(--primary);
+  color:white;
+  padding:20px;
+  text-align:center;
+  font-size:26px;
+}
+
+nav{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  background:#e0e7ff;
+  padding:10px;
+  flex-wrap:wrap;
+}
+
+nav button{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  background:white;
+  font-weight:bold;
+}
+
+nav button.active{
+  background:var(--primary);
+  color:white;
+}
+
+.container{
+  padding:20px;
+}
+
+.section{display:none;}
+.section.active{display:block;}
+
+.card{
+  background:var(--card);
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,.15);
+  max-width:420px;
+  margin:auto;
+}
+
+h2{text-align:center}
+
+/* Agenda */
+.agenda input{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+}
+
+.agenda li{
+  list-style:none;
+  background:#e0e7ff;
+  padding:8px;
+  margin-bottom:6px;
+  display:flex;
+  justify-content:space-between;
+  border-radius:6px;
+}
+
+/* Calculadora */
+.calc input{
+  width:100%;
+  padding:12px;
+  font-size:22px;
+  margin-bottom:10px;
+  text-align:right;
+}
+
+.calc button{
+  width:23%;
+  padding:14px;
+  margin:1%;
+  font-size:18px;
+  border-radius:8px;
+}
+
+/* Calendário */
+.calendar table{
+  width:100%;
+  border-collapse:collapse;
+}
+.calendar th,.calendar td{
+  padding:8px;
+  border:1px solid #94a3b8;
+  text-align:center;
+}
+
+/* Definições */
+.settings button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<header>📚 Estuda+</header>
+
+<nav>
+  <button class="active" onclick="show('agenda',this)">📝 Agenda</button>
+  <button onclick="show('calendar',this)">📅 Calendário</button>
+  <button onclick="show('calc',this)">🧮 Calculadora</button>
+  <button onclick="show('settings',this)">⚙️ Definições</button>
+</nav>
+
+<div class="container">
+
+<div id="agenda" class="section active">
+  <div class="card agenda">
+    <h2>Agenda</h2>
+    <input id="task" placeholder="Nova tarefa">
+    <button onclick="addTask()">Adicionar</button>
+    <ul id="tasks"></ul>
+  </div>
+</div>
+
+<div id="calendar" class="section">
+  <div class="card calendar">
+    <h2>Calendário</h2>
+    <div id="cal"></div>
+  </div>
+</div>
+
+<div id="calc" class="section">
+  <div class="card calc">
+    <h2>Calculadora</h2>
+    <input id="display" disabled>
+    <div>
+      <button onclick="add('7')">7</button>
+      <button onclick="add('8')">8</button>
+      <button onclick="add('9')">9</button>
+      <button onclick="add('/')">÷</button>
+
+      <button onclick="add('4')">4</button>
+      <button onclick="add('5')">5</button>
+      <button onclick="add('6')">6</button>
+      <button onclick="add('*')">×</button>
+
+      <button onclick="add('1')">1</button>
+      <button onclick="add('2')">2</button>
+      <button onclick="add('3')">3</button>
+      <button onclick="add('-')">−</button>
+
+      <button onclick="add('0')">0</button>
+      <button onclick="clearDisplay()">C</button>
+      <button onclick="calc()">=</button>
+      <button onclick="add('+')">+</button>
+    </div>
+  </div>
+</div>
+
+<div id="settings" class="section">
+  <div class="card settings">
+    <h2>Definições</h2>
+    <button onclick="toggleDark()">🌙 Modo escuro</button>
+    <button onclick="clearTasks()">🗑️ Limpar agenda</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* Calculadora */
+const display=document.getElementById("display");
+function add(v){display.value+=v}
+function clearDisplay(){display.value=""}
+function calc(){try{display.value=eval(display.value)}catch{display.value="Erro"}}
+
+/* Agenda */
+const tasksUl=document.getElementById("tasks");
+let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+
+function render(){
+  tasksUl.innerHTML="";
+  tasks.forEach((t,i)=>{
+    let li=document.createElement("li");
+    li.innerHTML=`${t} <button onclick="removeTask(${i})">❌</button>`;
+    tasksUl.appendChild(li);
+  });
+}
+function addTask(){
+  const t=document.getElementById("task").value;
+  if(!t)return;
+  tasks.push(t);
+  localStorage.setItem("tasks",JSON.stringify(tasks));
+  document.getElementById("task").value="";
+  render();
+}
+function removeTask(i){
+  tasks.splice(i,1);
+  localStorage.setItem("tasks",JSON.stringify(tasks));
+  render();
+}
+function clearTasks(){
+  if(confirm("Apagar todas as tarefas?")){
+    tasks=[];
+    localStorage.removeItem("tasks");
+    render();
+  }
+}
+render();
+
+/* Calendário */
+function buildCalendar(){
+  const d=new Date(),y=d.getFullYear(),m=d.getMonth();
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  let html="<table><tr>";
+  ["D","S","T","Q","Q","S","S"].forEach(x=>html+=`<th>${x}</th>`);
+  html+="</tr><tr>";
+  for(let i=0;i<first;i++)html+="<td></td>";
+  for(let day=1;day<=days;day++){
+    if((day+first-1)%7===0)html+="</tr><tr>";
+    html+=`<td>${day}</td>`;
+  }
+  html+="</tr></table>";
+  document.getElementById("cal").innerHTML=html;
+}
+buildCalendar();
+
+/* Modo escuro */
+function toggleDark(){
+  document.body.classList.toggle("dark");
+  localStorage.setItem("dark",document.body.classList.contains("dark"));
+}
+if(localStorage.getItem("dark")==="true"){
+  document.body.classList.add("dark");
+}
+</script>
+
+</body>
+</html>
