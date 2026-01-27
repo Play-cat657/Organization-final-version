@@ -75,11 +75,18 @@ nav button.active{
 
 h2{text-align:center}
 
+/* Relógio */
+.clock{
+  text-align:center;
+  font-size:20px;
+  margin-bottom:10px;
+}
+
 /* Agenda */
 .agenda input{
   width:100%;
   padding:10px;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 .agenda li{
@@ -89,6 +96,33 @@ h2{text-align:center}
   margin-bottom:6px;
   display:flex;
   justify-content:space-between;
+  align-items:center;
+  border-radius:6px;
+}
+
+.done{
+  text-decoration:line-through;
+  opacity:0.6;
+}
+
+/* Calendário */
+.calendar h3{
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.calendar table{
+  width:100%;
+  border-collapse:collapse;
+}
+.calendar th,.calendar td{
+  padding:8px;
+  border:1px solid #94a3b8;
+  text-align:center;
+}
+.today{
+  background:var(--primary);
+  color:white;
   border-radius:6px;
 }
 
@@ -107,17 +141,6 @@ h2{text-align:center}
   margin:1%;
   font-size:18px;
   border-radius:8px;
-}
-
-/* Calendário */
-.calendar table{
-  width:100%;
-  border-collapse:collapse;
-}
-.calendar th,.calendar td{
-  padding:8px;
-  border:1px solid #94a3b8;
-  text-align:center;
 }
 
 /* Definições */
@@ -145,8 +168,10 @@ h2{text-align:center}
 
 <div id="agenda" class="section active">
   <div class="card agenda">
+    <div class="clock" id="clock"></div>
     <h2>Agenda</h2>
     <input id="task" placeholder="Nova tarefa">
+    <input id="date" type="date">
     <button onclick="addTask()">Adicionar</button>
     <ul id="tasks"></ul>
   </div>
@@ -154,7 +179,7 @@ h2{text-align:center}
 
 <div id="calendar" class="section">
   <div class="card calendar">
-    <h2>Calendário</h2>
+    <h3 id="monthYear"></h3>
     <div id="cal"></div>
   </div>
 </div>
@@ -205,30 +230,46 @@ function show(id,btn){
   btn.classList.add('active');
 }
 
-/* Calculadora */
-const display=document.getElementById("display");
-function add(v){display.value+=v}
-function clearDisplay(){display.value=""}
-function calc(){try{display.value=eval(display.value)}catch{display.value="Erro"}}
+/* Relógio */
+function clock(){
+  const d=new Date();
+  document.getElementById("clock").innerText =
+    d.toLocaleTimeString("pt-PT");
+}
+setInterval(clock,1000);
+clock();
 
 /* Agenda */
-const tasksUl=document.getElementById("tasks");
 let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+const ul=document.getElementById("tasks");
 
 function render(){
-  tasksUl.innerHTML="";
+  ul.innerHTML="";
   tasks.forEach((t,i)=>{
     let li=document.createElement("li");
-    li.innerHTML=`${t} <button onclick="removeTask(${i})">❌</button>`;
-    tasksUl.appendChild(li);
+    li.innerHTML=`
+      <span class="${t.done?'done':''}">
+        ${t.text} (${t.date})
+      </span>
+      <div>
+        <button onclick="toggle(${i})">✔️</button>
+        <button onclick="removeTask(${i})">❌</button>
+      </div>`;
+    ul.appendChild(li);
   });
 }
 function addTask(){
-  const t=document.getElementById("task").value;
-  if(!t)return;
-  tasks.push(t);
+  const text=task.value;
+  const date=document.getElementById("date").value;
+  if(!text||!date)return;
+  tasks.push({text,date,done:false});
   localStorage.setItem("tasks",JSON.stringify(tasks));
-  document.getElementById("task").value="";
+  task.value="";date.value="";
+  render();
+}
+function toggle(i){
+  tasks[i].done=!tasks[i].done;
+  localStorage.setItem("tasks",JSON.stringify(tasks));
   render();
 }
 function removeTask(i){
@@ -247,19 +288,27 @@ render();
 
 /* Calendário */
 function buildCalendar(){
-  const d=new Date(),y=d.getFullYear(),m=d.getMonth();
+  const d=new Date();
+  const y=d.getFullYear(),m=d.getMonth();
+  const today=d.getDate();
+  const months=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  document.getElementById("monthYear").innerText=
+    `${months[m]} ${y}`;
+
   const first=new Date(y,m,1).getDay();
   const days=new Date(y,m+1,0).getDate();
+
   let html="<table><tr>";
   ["D","S","T","Q","Q","S","S"].forEach(x=>html+=`<th>${x}</th>`);
   html+="</tr><tr>";
+
   for(let i=0;i<first;i++)html+="<td></td>";
   for(let day=1;day<=days;day++){
     if((day+first-1)%7===0)html+="</tr><tr>";
-    html+=`<td>${day}</td>`;
+    html+=`<td class="${day===today?'today':''}">${day}</td>`;
   }
   html+="</tr></table>";
-  document.getElementById("cal").innerHTML=html;
+  cal.innerHTML=html;
 }
 buildCalendar();
 
