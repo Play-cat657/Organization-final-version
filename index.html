@@ -7,148 +7,104 @@
 
 <style>
 :root{
-  --primary:#4f46e5;
-  --bg:#f4f6f8;
+  --primary:#6366f1;
+  --bg:#f1f5f9;
   --card:#ffffff;
-  --text:#1f2937;
+  --text:#0f172a;
 }
-
 body.dark{
-  --bg:#0f172a;
-  --card:#1e293b;
+  --bg:#020617;
+  --card:#0f172a;
   --text:#f8fafc;
 }
-
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:system-ui,sans-serif;
   background:var(--bg);
   color:var(--text);
 }
-
 header{
   background:var(--primary);
   color:white;
   padding:20px;
   text-align:center;
   font-size:26px;
+  font-weight:bold;
 }
-
 nav{
   display:flex;
-  justify-content:center;
   gap:8px;
-  background:#e0e7ff;
+  justify-content:center;
   padding:10px;
   flex-wrap:wrap;
 }
-
 nav button{
   padding:10px 14px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
-  background:white;
-  font-weight:bold;
+  font-weight:600;
 }
-
 nav button.active{
   background:var(--primary);
   color:white;
 }
-
-.container{
-  padding:20px;
-}
-
-.section{display:none;}
-.section.active{display:block;}
-
+.container{padding:20px}
+.section{display:none}
+.section.active{display:block}
 .card{
   background:var(--card);
   padding:20px;
-  border-radius:14px;
-  box-shadow:0 10px 25px rgba(0,0,0,.15);
-  max-width:420px;
+  border-radius:18px;
+  box-shadow:0 15px 30px rgba(0,0,0,.15);
+  max-width:520px;
   margin:auto;
 }
-
 h2{text-align:center}
 
-/* Relógio */
-.clock{
-  text-align:center;
-  font-size:20px;
-  margin-bottom:10px;
-}
-
 /* Agenda */
-.agenda input{
+.agenda input, select{
   width:100%;
   padding:10px;
   margin-bottom:8px;
 }
-
 .agenda li{
   list-style:none;
-  background:#e0e7ff;
-  padding:8px;
+  padding:10px;
   margin-bottom:6px;
+  border-radius:10px;
+  background:#e0e7ff;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  border-radius:6px;
 }
-
-.done{
-  text-decoration:line-through;
-  opacity:0.6;
-}
+.done{text-decoration:line-through;opacity:.6}
 
 /* Calendário */
-.calendar h3{
+.calendar td{
+  padding:10px;
   text-align:center;
-  margin-bottom:10px;
+  cursor:pointer;
 }
-
-.calendar table{
-  width:100%;
-  border-collapse:collapse;
-}
-.calendar th,.calendar td{
-  padding:8px;
-  border:1px solid #94a3b8;
-  text-align:center;
-}
-.today{
+.selected{
   background:var(--primary);
   color:white;
-  border-radius:6px;
-}
-
-/* Calculadora */
-.calc input{
-  width:100%;
-  padding:12px;
-  font-size:22px;
-  margin-bottom:10px;
-  text-align:right;
-}
-
-.calc button{
-  width:23%;
-  padding:14px;
-  margin:1%;
-  font-size:18px;
   border-radius:8px;
 }
 
-/* Definições */
-.settings button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  font-size:16px;
+/* Pomodoro */
+.timer{
+  font-size:48px;
+  text-align:center;
+  margin:20px 0;
+}
+
+/* Stats */
+.stats div{
+  padding:10px;
+  background:#e0e7ff;
+  margin-bottom:8px;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -159,167 +115,199 @@ h2{text-align:center}
 
 <nav>
   <button class="active" onclick="show('agenda',this)">📝 Agenda</button>
-  <button onclick="show('calendar',this)">📅 Calendário</button>
-  <button onclick="show('calc',this)">🧮 Calculadora</button>
-  <button onclick="show('settings',this)">⚙️ Definições</button>
+  <button onclick="show('calendar',this)">📅</button>
+  <button onclick="show('week',this)">📆 Semana</button>
+  <button onclick="show('pomodoro',this)">⏱️</button>
+  <button onclick="show('stats',this)">📊</button>
+  <button onclick="show('settings',this)">⚙️</button>
 </nav>
 
 <div class="container">
 
+<!-- AGENDA -->
 <div id="agenda" class="section active">
   <div class="card agenda">
-    <div class="clock" id="clock"></div>
-    <h2>Agenda</h2>
-    <input id="task" placeholder="Nova tarefa">
-    <input id="date" type="date">
+    <h2 id="dayTitle"></h2>
+    <input id="taskText" placeholder="Tarefa">
+    <input id="taskTime" type="time">
     <button onclick="addTask()">Adicionar</button>
-    <ul id="tasks"></ul>
+    <ul id="taskList"></ul>
   </div>
 </div>
 
+<!-- CALENDÁRIO -->
 <div id="calendar" class="section">
   <div class="card calendar">
-    <h3 id="monthYear"></h3>
+    <h2 id="monthYear"></h2>
     <div id="cal"></div>
   </div>
 </div>
 
-<div id="calc" class="section">
-  <div class="card calc">
-    <h2>Calculadora</h2>
-    <input id="display" disabled>
-    <div>
-      <button onclick="add('7')">7</button>
-      <button onclick="add('8')">8</button>
-      <button onclick="add('9')">9</button>
-      <button onclick="add('/')">÷</button>
-
-      <button onclick="add('4')">4</button>
-      <button onclick="add('5')">5</button>
-      <button onclick="add('6')">6</button>
-      <button onclick="add('*')">×</button>
-
-      <button onclick="add('1')">1</button>
-      <button onclick="add('2')">2</button>
-      <button onclick="add('3')">3</button>
-      <button onclick="add('-')">−</button>
-
-      <button onclick="add('0')">0</button>
-      <button onclick="clearDisplay()">C</button>
-      <button onclick="calc()">=</button>
-      <button onclick="add('+')">+</button>
-    </div>
+<!-- SEMANA -->
+<div id="week" class="section">
+  <div class="card">
+    <h2>📆 Vista Semanal</h2>
+    <ul id="weekView"></ul>
   </div>
 </div>
 
+<!-- POMODORO -->
+<div id="pomodoro" class="section">
+  <div class="card">
+    <h2>⏱️ Pomodoro</h2>
+    <div class="timer" id="timer">25:00</div>
+    <button onclick="startPomodoro()">▶️ Iniciar</button>
+    <button onclick="stopPomodoro()">⏹️ Parar</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="stats" class="section">
+  <div class="card stats">
+    <h2>📊 Estatísticas</h2>
+    <div id="total"></div>
+    <div id="done"></div>
+    <div id="percent"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
 <div id="settings" class="section">
-  <div class="card settings">
-    <h2>Definições</h2>
+  <div class="card">
     <button onclick="toggleDark()">🌙 Modo escuro</button>
-    <button onclick="clearTasks()">🗑️ Limpar agenda</button>
   </div>
 </div>
 
 </div>
 
 <script>
+let selectedDate=new Date().toISOString().split("T")[0];
+let data=JSON.parse(localStorage.getItem("agenda")||"{}");
+
+/* Navegação */
 function show(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
+  if(btn)btn.classList.add('active');
 }
-
-/* Relógio */
-function clock(){
-  const d=new Date();
-  document.getElementById("clock").innerText =
-    d.toLocaleTimeString("pt-PT");
-}
-setInterval(clock,1000);
-clock();
 
 /* Agenda */
-let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
-const ul=document.getElementById("tasks");
-
-function render(){
-  ul.innerHTML="";
-  tasks.forEach((t,i)=>{
+function renderAgenda(){
+  dayTitle.innerText="📅 "+selectedDate;
+  taskList.innerHTML="";
+  (data[selectedDate]||[]).forEach((t,i)=>{
     let li=document.createElement("li");
     li.innerHTML=`
-      <span class="${t.done?'done':''}">
-        ${t.text} (${t.date})
-      </span>
+      <span class="${t.done?'done':''}">${t.time} - ${t.text}</span>
       <div>
-        <button onclick="toggle(${i})">✔️</button>
+        <button onclick="toggleTask(${i})">✔️</button>
         <button onclick="removeTask(${i})">❌</button>
       </div>`;
-    ul.appendChild(li);
+    taskList.appendChild(li);
   });
+  updateStats();
 }
 function addTask(){
-  const text=task.value;
-  const date=document.getElementById("date").value;
-  if(!text||!date)return;
-  tasks.push({text,date,done:false});
-  localStorage.setItem("tasks",JSON.stringify(tasks));
-  task.value="";date.value="";
-  render();
+  if(!taskText.value||!taskTime.value)return;
+  data[selectedDate]=data[selectedDate]||[];
+  data[selectedDate].push({text:taskText.value,time:taskTime.value,done:false});
+  save();
 }
-function toggle(i){
-  tasks[i].done=!tasks[i].done;
-  localStorage.setItem("tasks",JSON.stringify(tasks));
-  render();
+function toggleTask(i){
+  data[selectedDate][i].done=!data[selectedDate][i].done;
+  save();
 }
 function removeTask(i){
-  tasks.splice(i,1);
-  localStorage.setItem("tasks",JSON.stringify(tasks));
-  render();
+  data[selectedDate].splice(i,1);
+  save();
 }
-function clearTasks(){
-  if(confirm("Apagar todas as tarefas?")){
-    tasks=[];
-    localStorage.removeItem("tasks");
-    render();
-  }
+function save(){
+  localStorage.setItem("agenda",JSON.stringify(data));
+  renderAgenda();
+  renderWeek();
 }
-render();
 
 /* Calendário */
 function buildCalendar(){
-  const d=new Date();
+  const d=new Date(selectedDate);
   const y=d.getFullYear(),m=d.getMonth();
-  const today=d.getDate();
-  const months=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  document.getElementById("monthYear").innerText=
-    `${months[m]} ${y}`;
-
-  const first=new Date(y,m,1).getDay();
-  const days=new Date(y,m+1,0).getDate();
-
+  monthYear.innerText=d.toLocaleString("pt-PT",{month:"long",year:"numeric"});
+  let first=new Date(y,m,1).getDay();
+  let days=new Date(y,m+1,0).getDate();
   let html="<table><tr>";
   ["D","S","T","Q","Q","S","S"].forEach(x=>html+=`<th>${x}</th>`);
   html+="</tr><tr>";
-
   for(let i=0;i<first;i++)html+="<td></td>";
   for(let day=1;day<=days;day++){
-    if((day+first-1)%7===0)html+="</tr><tr>";
-    html+=`<td class="${day===today?'today':''}">${day}</td>`;
+    let date=`${y}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    html+=`<td class="${date===selectedDate?'selected':''}"
+    onclick="selectDate('${date}')">${day}</td>`;
+    if((day+first)%7===0)html+="</tr><tr>";
   }
-  html+="</tr></table>";
   cal.innerHTML=html;
 }
-buildCalendar();
+function selectDate(d){
+  selectedDate=d;
+  buildCalendar();
+  renderAgenda();
+  show('agenda',document.querySelector('nav button'));
+}
 
-/* Modo escuro */
+/* Semana */
+function renderWeek(){
+  weekView.innerHTML="";
+  for(let i=0;i<7;i++){
+    let d=new Date();
+    d.setDate(d.getDate()+i);
+    let key=d.toISOString().split("T")[0];
+    let count=(data[key]||[]).length;
+    let li=document.createElement("li");
+    li.innerText=`${key} → ${count} tarefas`;
+    weekView.appendChild(li);
+  }
+}
+
+/* Pomodoro */
+let time=1500,interval;
+function startPomodoro(){
+  if(Notification.permission!=="granted")Notification.requestPermission();
+  interval=setInterval(()=>{
+    time--;
+    timer.innerText=`${Math.floor(time/60)}:${String(time%60).padStart(2,"0")}`;
+    if(time===0){
+      new Notification("Pomodoro concluído!");
+      stopPomodoro();
+      time=300;
+    }
+  },1000);
+}
+function stopPomodoro(){
+  clearInterval(interval);
+}
+
+/* Stats */
+function updateStats(){
+  let total=0,done=0;
+  Object.values(data).forEach(d=>{
+    total+=d.length;
+    done+=d.filter(x=>x.done).length;
+  });
+  totalDiv.innerText=`Total tarefas: ${total}`;
+  doneDiv.innerText=`Concluídas: ${done}`;
+  percent.innerText=`Produtividade: ${total?Math.round(done/total*100):0}%`;
+}
+
+/* Dark */
 function toggleDark(){
   document.body.classList.toggle("dark");
   localStorage.setItem("dark",document.body.classList.contains("dark"));
 }
-if(localStorage.getItem("dark")==="true"){
-  document.body.classList.add("dark");
-}
+if(localStorage.getItem("dark")==="true")document.body.classList.add("dark");
+
+buildCalendar();
+renderAgenda();
+renderWeek();
 </script>
 
 </body>
